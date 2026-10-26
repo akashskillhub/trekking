@@ -8,12 +8,14 @@ import config from '../config';
 import { toast } from 'react-toastify';
 import { useContext } from 'react';
 import { AuthContext } from '../App';
+import { useState } from 'react';
 const LoginOtp = () => {
+    const [show, setShow] = useState(false)
     const { user, setUser } = useContext(AuthContext)
     const navigate = useNavigate()
     const schema = z.object({
         email: z.string().email('Invalid email'),
-        otp: z.string().min(3, 'Minimum 3 characters'),
+        otp: z.string().optional(),
     });
 
     const { handleSubmit, register, reset, formState: { errors, touchedFields } } = useForm({
@@ -22,12 +24,16 @@ const LoginOtp = () => {
 
     const handleFormSubmit = async (loginData) => {
         try {
-            const { data } = await axios.post(`${config.BACKEND_URL}/api/auth/signin-otp`, loginData)
-            setUser(data.result)
-            localStorage.setItem("user", JSON.stringify(data.result))
-            reset()
-            toast.success("login success")
-            navigate("/admin")
+            if (show) {
+                const { data } = await axios.post(`${config.BACKEND_URL}/api/auth/verify-otp`, loginData)
+                setUser(data.result)
+                navigate("/admin")
+                toast.success("login success")
+            } else {
+                await axios.post(`${config.BACKEND_URL}/api/auth/signin-otp`, loginData)
+                toast.success("otp send")
+                setShow(true)
+            }
         } catch (error) {
             toast.error('unable to login')
             console.log(error);
@@ -48,29 +54,33 @@ const LoginOtp = () => {
                         <div className="card-header">Login With OTP</div>
                         <div className="card-body">
                             <form onSubmit={handleSubmit(handleFormSubmit)}>
-                                <div>
-                                    <label htmlFor="email" className="form-label">Email</label>
-                                    <input
-                                        type="text"
-                                        {...register('email')}
-                                        className={handleClasses('email')}
-                                        id="email"
-                                        placeholder="Enter Your Email"
-                                    />
-                                    <div className="invalid-feedback">{errors.email?.message}</div>
-                                </div>
 
-                                <div className="mt-2">
-                                    <label htmlFor="otp" className="form-label">otp</label>
-                                    <input
-                                        type="otp"
-                                        {...register('otp')}
-                                        className={handleClasses('otp')}
-                                        id="otp"
-                                        placeholder="Enter Your otp"
-                                    />
-                                    <div className="invalid-feedback">{errors.otp?.message}</div>
-                                </div>
+
+                                {
+                                    show
+                                        ? <div className="mt-2">
+                                            <label htmlFor="otp" className="form-label">otp</label>
+                                            <input
+                                                type="otp"
+                                                {...register('otp')}
+                                                className={handleClasses('otp')}
+                                                id="otp"
+                                                placeholder="Enter Your otp"
+                                            />
+                                            <div className="invalid-feedback">{errors.otp?.message}</div>
+                                        </div>
+                                        : <div>
+                                            <label htmlFor="email" className="form-label">Email</label>
+                                            <input
+                                                type="text"
+                                                {...register('email')}
+                                                className={handleClasses('email')}
+                                                id="email"
+                                                placeholder="Enter Your Email"
+                                            />
+                                            <div className="invalid-feedback">{errors.email?.message}</div>
+                                        </div>
+                                }
 
                                 <button type="submit" className="btn btn-primary w-100 mt-3">
                                     Login With OTP

@@ -1,0 +1,5 @@
+const { differenceInSeconds } = require("date-fns")
+const seconds = differenceInSeconds(new Date(), new Date("2026-10-25 11:03:29.436"))
+console.log(seconds)
+console.log(new Date())
+console.log(new Date("2026-10-25 11:03:29.436"))

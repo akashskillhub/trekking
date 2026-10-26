@@ -2,10 +2,15 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import clsx from 'clsx';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from "axios"
 import config from '../config';
+import { useState } from 'react';
+import { toast } from "react-toastify"
+import LoginGoogle from './login-google';
 const Register = () => {
+  const navigate = useNavigate()
+  const [loading, setLoading] = useState(false)
   const schema = z.object({
     name: z.string().min(3),
     email: z.string().email('Invalid email'),
@@ -18,10 +23,16 @@ const Register = () => {
 
   const handleFormSubmit = async (loginData) => {
     try {
+      setLoading(true)
       await axios.post(`${config.BACKEND_URL}/api/auth/register`, loginData);
       reset();
+      setLoading(false)
+      toast.success("register success")
+      navigate("/login")
     } catch (error) {
       console.log(error);
+      setLoading(false)
+      toast.error('unable to register')
     }
   };
 
@@ -30,6 +41,13 @@ const Register = () => {
     'is-invalid': errors[key],
     'is-valid': touchedFields[key] && !errors[key],
   });
+
+  if (loading) {
+    return <div>
+      <h6>Please wait...</h6>
+      <div class="spinner-border text-primary"></div>
+    </div>
+  }
 
   return (
     <div className="container">
@@ -75,13 +93,13 @@ const Register = () => {
                 </div>
 
                 <button type="submit" className="btn btn-primary w-100 mt-3">
-                  Login
+                  Register
                 </button>
               </form>
 
-              <p className="text-center mt-3">
-                Don't have an account? <Link to="/register">Create Account</Link>
-              </p>
+              <hr />
+              <p className='text-center'>OR</p>
+              <LoginGoogle />
             </div>
           </div>
         </div>

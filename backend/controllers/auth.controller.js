@@ -1,23 +1,39 @@
 const db = require("../db")
 const bcrypt = require('bcryptjs')
+const sendEmail = require("../utils/email")
+const { OAuth2Client } = require("google-auth-library")
+
+const { differenceInSeconds } = require("date-fns")
+const config = require("../config")
 const registerUser = async (req, res) => {
     try {
         const { name, email, password } = req.body
         // node validation
+        const query = `SELECT * FROM users WHERE email = $1`
+        const email_val = [email]
+        const { rows } = await db.query(query, email_val)
+
+        if (rows.length > 0) {
+            return res.status(401).json({ message: "email already registerd with us" })
+        }
+
 
         const hash = await bcrypt.hash(password, 10)
 
         const q = "INSERT INTO users (name,email,password) VALUES ($1,$2,$3)"
         const value = [name, email, hash]
         await db.query(q, value)
-
+        await sendEmail({
+            to: email,
+            subject: 'welcome to treking fest',
+            message: 'welcome to trekkers fest'
+        })
         res.json({ message: "register success" })
     } catch (error) {
         console.log(error)
         res.status(500).json({ message: "something went wrong" })
     }
 }
-
 const signinWithEmailAndPassword = async (req, res) => {
     try {
         const { email, password } = req.body
@@ -45,7 +61,64 @@ const signinWithEmailAndPassword = async (req, res) => {
 }
 const signinWithOTP = async (req, res) => {
     try {
-        res.json({ message: "login success" })
+        const { email } = req.body
+        const q = `SELECT * FROM users WHERE email = $1`
+        const value = [email]
+        const { rows } = await db.query(q, value)
+
+        if (rows.length === 0) {
+            return res.status(401).json({ message: "invalid email" })
+        }
+        const otp = Math.floor(1000 + (Math.random() * 999))
+        const string_otp = otp.toString()
+        const hashOtp = await bcrypt.hash(string_otp, 10)
+        const query = "UPDATE users SET otp = $1 , otpSendOn = $2  WHERE id = $3"
+        const updateValue = [hashOtp, new Date(), rows[0].id]
+        await db.query(query, updateValue)
+        await sendEmail({
+            to: email,
+            subject: "your login otp",
+            message: `your otp is ${otp}`
+        })
+
+        res.json({ message: "otp send success" })
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: "something went wrong" })
+    }
+}
+const verifyOtp = async (req, res) => {
+    try {
+        const { email, otp } = req.body
+        const q = `SELECT * FROM users WHERE email = $1`
+        const value = [email]
+        const { rows } = await db.query(q, value)
+
+        if (rows.length === 0) {
+            return res.status(401).json({ message: "invalid email" })
+        }
+        const [user] = rows
+        console.log(user)
+        const seconds = differenceInSeconds(new Date(), new Date(user.otpsendon))
+        if (seconds > config.OTP_EXPIRY_SECONDS) {
+            await db.query("UPDATE users SET otp = $1  WHERE id = $2;", ["", user.id])
+            return res.status(401).json({ message: "otp expired" })
+        }
+
+        const verify = await bcrypt.compare(otp, user.otp)
+        if (!verify) {
+            return res.status(401).json({ message: "invalid OTP" })
+        }
+        await db.query("UPDATE users SET otp = $1  WHERE id = $2;", ["", user.id])
+
+        res.json({
+            message: "login success", result: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                mobile: user.mobile,
+            }
+        })
     } catch (error) {
         console.log(error)
         res.status(500).json({ message: "something went wrong" })
@@ -53,7 +126,35 @@ const signinWithOTP = async (req, res) => {
 }
 const signinWithGoogle = async (req, res) => {
     try {
-        res.json({ message: "login success" })
+        const { clientId, credential } = req.body
+        const client = new OAuth2Client({ client_id: config.GOOGLE_CLIENT_ID })
+        const data = await client.verifyIdToken({ idToken: credential })
+        if (!data) {
+            return res.status(401).json({ message: "invalid token" })
+        }
+
+        const { payload } = data
+        const { name, picture, email } = payload
+
+        const query = `SELECT * FROM users WHERE email = $1`
+        const email_val = [email]
+        const { rows } = await db.query(query, email_val)
+
+        if (rows.length > 0) {
+            // email already present so LOGIN LOGIC
+            res.json({ message: "login success" })
+        } else {
+            // email Not Found so Register LOGIC
+            const q = "INSERT INTO users (name,email,avatar) VALUES ($1,$2,$3)"
+            const value = [name, email, picture]
+            await db.query(q, value)
+            await sendEmail({
+                to: email,
+                subject: 'welcome to treking fest From Google Registration',
+                message: 'welcome to trekkers fest'
+            })
+            res.json({ message: "register success" })
+        }
     } catch (error) {
         console.log(error)
         res.status(500).json({ message: "something went wrong" })
@@ -64,5 +165,6 @@ module.exports = {
     registerUser,
     signinWithEmailAndPassword,
     signinWithGoogle,
-    signinWithOTP
+    signinWithOTP,
+    verifyOtp
 }

@@ -5,7 +5,8 @@ const config = {
 
     NODE_ENV: import.meta.env.VITE_NODE_ENV === 'development'
         ? "development"
-        : "production"
+        : "production",
+    GOOGLE_CLIENT_ID: import.meta.env.VITE_GOOGLE_CLIENT_ID
 }
 
 export default config
