@@ -20,7 +20,7 @@ CREATE TABLE users (
   isActive BOOLEAN DEFAULT TRUE
 )
 
-INSERT INTO users (name, email,role) VALUES ('akash','akashdhone01@gmail.com','admin')
+INSERT INTO users (name, email,role) VALUES ('yourname','youremail@gmail.com','admin')
 
 
 DELETE FROM users WHERE id = $1;
