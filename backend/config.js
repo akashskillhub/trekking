@@ -12,7 +12,8 @@ const config = {
     EMAIL_PASSWORD: process.env.EMAIL_PASS,
     OTP_EXPIRY_SECONDS: process.env.OTP_EXPIRY_SECONDS,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
-    SMS_API_KEY: process.env.SMS_API_KEY
+    SMS_API_KEY: process.env.SMS_API_KEY,
+    JWT_SECRET: process.env.JWT_SECRET
 }
 
 module.exports = config

@@ -8,6 +8,8 @@ const config = require("../config")
 const sendSMS = require("../utils/sms")
 const registerTemplate = require("../email-templates/registerTemplate")
 const otpTemplate = require("../email-templates/otpTemplate")
+
+const jwt = require("jsonwebtoken")
 const registerUser = async (req, res) => {
     try {
         const { name, email, password } = req.body
@@ -55,7 +57,8 @@ const signinWithEmailAndPassword = async (req, res) => {
         if (!user.isactive) {
             return res.status(401).json({ message: "account blocked by admin" })
         }
-
+        const token = jwt.sign({ id: user.id, role: user.role }, config.JWT_SECRET, { expiresIn: 15 * 60 * 1000 })
+        res.cookie("auth", token, { maxAge: 2 * 60 * 1000 })
         res.json({
             message: "login success", result: {
                 id: user.id,

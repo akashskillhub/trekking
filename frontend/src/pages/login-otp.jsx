@@ -25,7 +25,7 @@ const LoginOtp = () => {
     const handleFormSubmit = async (loginData) => {
         try {
             if (show) {
-                const { data } = await axios.post(`${config.BACKEND_URL}/api/auth/verify-otp`, loginData)
+                const { data } = await axios.post(`${config.BACKEND_URL}/api/auth/verify-otp`, loginData, { withCredentials: "includes" })
                 setUser(data.result)
                 if (data.result.role === "admin") {
                     navigate("/admin")
@@ -34,7 +34,7 @@ const LoginOtp = () => {
                 }
                 toast.success("login success")
             } else {
-                await axios.post(`${config.BACKEND_URL}/api/auth/signin-otp`, loginData)
+                await axios.post(`${config.BACKEND_URL}/api/auth/signin-otp`, loginData, { withCredentials: "includes" })
                 toast.success("otp send")
                 setShow(true)
             }

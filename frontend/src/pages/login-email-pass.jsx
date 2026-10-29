@@ -18,11 +18,11 @@ const LoginEmailPass = () => {
 
     const { handleSubmit, register, reset, formState: { errors, touchedFields } } = useForm({
         resolver: zodResolver(schema)
-    });
+    })
 
     const handleFormSubmit = async (loginData) => {
         try {
-            const { data } = await axios.post(`${config.BACKEND_URL}/api/auth/signin-email-pass`, loginData)
+            const { data } = await axios.post(`${config.BACKEND_URL}/api/auth/signin-email-pass`, loginData, { withCredentials: "includes" })
             setUser(data.result)
             localStorage.setItem("user", JSON.stringify(data.result))
             reset()

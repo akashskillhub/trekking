@@ -11,7 +11,7 @@ const LoginGoogle = () => {
     const navigate = useNavigate()
     const handleSuccess = async googleData => {
         try {
-            const { data } = await axios.post(`${config.BACKEND_URL}/api/auth/signin-google`, googleData)
+            const { data } = await axios.post(`${config.BACKEND_URL}/api/auth/signin-google`, googleData, { withCredentials: "includes" })
             console.log(data)
             setUser(data.result)
             localStorage.setItem("user", JSON.stringify(data.result))
