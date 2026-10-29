@@ -25,7 +25,7 @@ INSERT INTO users (name, email,role) VALUES ('akash','akashdhone01@gmail.com','a
 
 DELETE FROM users WHERE id = $1;
 
-UPDATE users SET mobile = '7666855680' WHERE id = 1;
+UPDATE users SET isActive = true WHERE id = $1;
 
 SELECT * FROM users;
 
