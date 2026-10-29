@@ -5,6 +5,9 @@ const { OAuth2Client } = require("google-auth-library")
 
 const { differenceInSeconds } = require("date-fns")
 const config = require("../config")
+const sendSMS = require("../utils/sms")
+const registerTemplate = require("../email-templates/registerTemplate")
+const otpTemplate = require("../email-templates/otpTemplate")
 const registerUser = async (req, res) => {
     try {
         const { name, email, password } = req.body
@@ -26,7 +29,7 @@ const registerUser = async (req, res) => {
         await sendEmail({
             to: email,
             subject: 'welcome to treking fest',
-            message: 'welcome to trekkers fest'
+            message: registerTemplate({ name })
         })
         res.json({ message: "register success" })
     } catch (error) {
@@ -53,7 +56,14 @@ const signinWithEmailAndPassword = async (req, res) => {
             return res.status(401).json({ message: "account blocked by admin" })
         }
 
-        res.json({ message: "login success", result: { id: user.id, email: user.email, name: user.name } })
+        res.json({
+            message: "login success", result: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                role: user.role
+            }
+        })
     } catch (error) {
         console.log(error)
         res.status(500).json({ message: "something went wrong" })
@@ -78,8 +88,14 @@ const signinWithOTP = async (req, res) => {
         await sendEmail({
             to: email,
             subject: "your login otp",
-            message: `your otp is ${otp}`
+            message: otpTemplate({ name: rows[0].name, otp, min: 1 })
         })
+        if (rows[0].mobile) {
+            // sendSMS({ message: `your otp is ${otp}`, mobile: rows[0].mobile })
+            console.log('sms send success')
+        } else {
+            console.log("sms not send")
+        }
 
         res.json({ message: "otp send success" })
     } catch (error) {
@@ -117,6 +133,7 @@ const verifyOtp = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 mobile: user.mobile,
+                role: user.role
             }
         })
     } catch (error) {
@@ -139,10 +156,18 @@ const signinWithGoogle = async (req, res) => {
         const query = `SELECT * FROM users WHERE email = $1`
         const email_val = [email]
         const { rows } = await db.query(query, email_val)
-
+        const [user] = rows
         if (rows.length > 0) {
             // email already present so LOGIN LOGIC
-            res.json({ message: "login success" })
+            res.json({
+                message: "login success", result: {
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    mobile: user.mobile,
+                    role: user.role
+                }
+            })
         } else {
             // email Not Found so Register LOGIC
             const q = "INSERT INTO users (name,email,avatar) VALUES ($1,$2,$3)"

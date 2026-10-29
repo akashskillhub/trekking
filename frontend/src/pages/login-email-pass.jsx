@@ -27,7 +27,11 @@ const LoginEmailPass = () => {
             localStorage.setItem("user", JSON.stringify(data.result))
             reset()
             toast.success("login success")
-            navigate("/admin")
+            if (data.result.role === "admin") {
+                navigate("/admin")
+            } else {
+                navigate("/user")
+            }
         } catch (error) {
             toast.error('unable to login')
             console.log(error);

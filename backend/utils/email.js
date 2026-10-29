@@ -7,7 +7,7 @@ const sendEmail = ({ to, subject, message }) => new Promise(async (resolve, reje
             service: 'gmail',
             auth: { user: config.EMAIL, pass: config.EMAIL_PASSWORD }
         })
-        await transport.sendMail({ to, subject, text: message })
+        await transport.sendMail({ to, subject, html: message })
         console.log("email send success")
         resolve("email send success")
     } catch (error) {

@@ -27,7 +27,11 @@ const LoginOtp = () => {
             if (show) {
                 const { data } = await axios.post(`${config.BACKEND_URL}/api/auth/verify-otp`, loginData)
                 setUser(data.result)
-                navigate("/admin")
+                if (data.result.role === "admin") {
+                    navigate("/admin")
+                } else {
+                    navigate("/user")
+                }
                 toast.success("login success")
             } else {
                 await axios.post(`${config.BACKEND_URL}/api/auth/signin-otp`, loginData)

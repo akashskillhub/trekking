@@ -10,6 +10,8 @@ import { ToastContainer } from "react-toastify"
 import { createContext } from "react";
 import { useState } from "react";
 import AdminProtected from "./components/admin-protected";
+import UserNavbar from "./components/user-navbar";
+import Account from "./pages/account";
 
 export const AuthContext = createContext()
 
@@ -28,6 +30,10 @@ function App() {
 
           <Route path="/admin" element={<AdminProtected> <AdminNavbar /> <Outlet /> </AdminProtected>}>
             <Route index element={<Dashboard />} />
+          </Route>
+    
+          <Route path="/user" element={<AdminProtected> <UserNavbar /> <Outlet /> </AdminProtected>}>
+            <Route index element={<Account />} />
           </Route>
         </Routes>
       </BrowserRouter>
