@@ -12,6 +12,7 @@ import { useState } from "react";
 import AdminProtected from "./components/admin-protected";
 import UserNavbar from "./components/user-navbar";
 import Account from "./pages/account";
+import Trek from "./pages/trek";
 
 export const AuthContext = createContext()
 
@@ -30,8 +31,9 @@ function App() {
 
           <Route path="/admin" element={<AdminProtected> <AdminNavbar /> <Outlet /> </AdminProtected>}>
             <Route index element={<Dashboard />} />
+            <Route path="trek" element={<Trek />} />
           </Route>
-    
+
           <Route path="/user" element={<AdminProtected> <UserNavbar /> <Outlet /> </AdminProtected>}>
             <Route index element={<Account />} />
           </Route>

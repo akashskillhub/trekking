@@ -27,6 +27,7 @@ const LoginOtp = () => {
             if (show) {
                 const { data } = await axios.post(`${config.BACKEND_URL}/api/auth/verify-otp`, loginData, { withCredentials: "includes" })
                 setUser(data.result)
+                localStorage.setItem("user", JSON.stringify(data.result))
                 if (data.result.role === "admin") {
                     navigate("/admin")
                 } else {

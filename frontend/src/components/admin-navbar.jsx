@@ -2,11 +2,14 @@ import { useContext } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../App";
 import { toast } from "react-toastify";
+import axios from "axios";
+import config from "../config";
 
 function AdminNavbar() {
   const { user, setUser } = useContext(AuthContext)
   const handleLogout = async () => {
     try {
+      await axios.post(`${config.BACKEND_URL}/api/auth/signout`, {}, { withCredentials: "includes" })
       localStorage.removeItem("user")
       setUser(null)
     } catch (error) {
@@ -30,6 +33,9 @@ function AdminNavbar() {
           <ul className="navbar-nav ms-auto">
             <li className="nav-item">
               <Link className="nav-link" to="/admin">Dashboard</Link>
+            </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/admin/trek">Trek</Link>
             </li>
 
             {

@@ -46,4 +46,53 @@ const unblockAccount = async (req, res) => {
     }
 };
 
-module.exports = { fetchAllUsers, blockAccount, unblockAccount };
+const readTrek = async (req, res) => {
+    try {
+        return res.status(200).json({ message: "trek read success" })
+    } catch (error) {
+        console.error(error)
+        return res.status(500).json({
+            message: "unable to unblock users"
+        })
+    }
+}
+const createTrek = async (req, res) => {
+    try {
+        return res.status(200).json({ message: "trek create success" })
+    } catch (error) {
+        console.error(error)
+        return res.status(500).json({
+            message: "unable to unblock users"
+        })
+    }
+}
+const updateTrek = async (req, res) => {
+    try {
+        return res.status(200).json({ message: "trek update success" })
+    } catch (error) {
+        console.error(error)
+        return res.status(500).json({
+            message: "unable to unblock users"
+        })
+    }
+}
+const deleteTrek = async (req, res) => {
+    try {
+        return res.status(200).json({ message: "trek delete success" })
+    } catch (error) {
+        console.error(error)
+        return res.status(500).json({
+            message: "unable to unblock users"
+        })
+    }
+}
+
+module.exports = {
+    fetchAllUsers,
+    blockAccount,
+    unblockAccount,
+    readTrek,
+    createTrek,
+    updateTrek,
+    deleteTrek
+};

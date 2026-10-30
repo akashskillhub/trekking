@@ -57,8 +57,8 @@ const signinWithEmailAndPassword = async (req, res) => {
         if (!user.isactive) {
             return res.status(401).json({ message: "account blocked by admin" })
         }
-        const token = jwt.sign({ id: user.id, role: user.role }, config.JWT_SECRET, { expiresIn: 15 * 60 * 1000 })
-        res.cookie("auth", token, { maxAge: 2 * 60 * 1000 })
+        const token = jwt.sign({ id: user.id, role: user.role }, config.JWT_SECRET, { expiresIn: config.JWT_EXPIRY })
+        res.cookie("auth", token, { maxAge: config.COOKIE_EXPIRY })
         res.json({
             message: "login success", result: {
                 id: user.id,
@@ -129,7 +129,8 @@ const verifyOtp = async (req, res) => {
             return res.status(401).json({ message: "invalid OTP" })
         }
         await db.query("UPDATE users SET otp = $1  WHERE id = $2;", ["", user.id])
-
+        const token = jwt.sign({ id: user.id, role: user.role }, config.JWT_SECRET, { expiresIn: config.JWT_EXPIRY })
+        res.cookie("auth", token, { maxAge: config.COOKIE_EXPIRY })
         res.json({
             message: "login success", result: {
                 id: user.id,
@@ -162,6 +163,8 @@ const signinWithGoogle = async (req, res) => {
         const [user] = rows
         if (rows.length > 0) {
             // email already present so LOGIN LOGIC
+            const token = jwt.sign({ id: user.id, role: user.role }, config.JWT_SECRET, { expiresIn: config.JWT_EXPIRY })
+            res.cookie("auth", token, { maxAge: config.COOKIE_EXPIRY })
             res.json({
                 message: "login success", result: {
                     id: user.id,
@@ -188,11 +191,21 @@ const signinWithGoogle = async (req, res) => {
         res.status(500).json({ message: "something went wrong" })
     }
 }
+const signout = async (req, res) => {
+    try {
+        res.clearCookie("auth")
+        res.json({ message: "signout success" })
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: "something went wrong" })
+    }
+}
 
 module.exports = {
     registerUser,
     signinWithEmailAndPassword,
     signinWithGoogle,
     signinWithOTP,
-    verifyOtp
+    verifyOtp,
+    signout
 }

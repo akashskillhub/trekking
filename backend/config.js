@@ -13,7 +13,10 @@ const config = {
     OTP_EXPIRY_SECONDS: process.env.OTP_EXPIRY_SECONDS,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     SMS_API_KEY: process.env.SMS_API_KEY,
-    JWT_SECRET: process.env.JWT_SECRET
+    JWT_SECRET: process.env.JWT_SECRET,
+    JWT_EXPIRY: process.env.JWT_EXPIRY,
+    COOKIE_EXPIRY: process.env.COOKIE_EXPIRY,
+
 }
 
 module.exports = config

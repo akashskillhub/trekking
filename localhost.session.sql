@@ -29,3 +29,26 @@ UPDATE users SET isActive = true WHERE id = $1;
 
 SELECT * FROM users;
 
+CREATE TABLE trek (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(250) NOT NULL,
+  location VARCHAR(250) NOT NULL,
+  difficulty VARCHAR(250) NOT NULL,
+  duration VARCHAR(250) NOT NULL,
+  availableslots VARCHAR(250) NOT NULL,
+  status VARCHAR(250) NOT NULL,
+  startdate TIMESTAMP NOT NULL,
+  enddate TIMESTAMP NOT NULL
+)
+
+-- Trek ID
+-- Trek Name
+-- Location
+-- Difficulty (Easy / Moderate / Hard)
+-- Duration (in days)
+-- Available Slots
+-- Assigned Staff ID
+-- Status (Pending / Approved / Open / Closed / Completed)
+-- Start Date
+-- End Date
+
