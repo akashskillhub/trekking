@@ -48,7 +48,9 @@ const unblockAccount = async (req, res) => {
 
 const readTrek = async (req, res) => {
     try {
-        return res.status(200).json({ message: "trek read success" })
+        const q = `SELECT * FROM trek`;
+        const { rows } = await db.query(q)
+        return res.status(200).json({ message: "trek read success", result: rows })
     } catch (error) {
         console.error(error)
         return res.status(500).json({
@@ -58,6 +60,10 @@ const readTrek = async (req, res) => {
 }
 const createTrek = async (req, res) => {
     try {
+        const { name, location, difficulty, duration, availableSlots, status, startDate, endDate } = req.body
+        const q = `INSERT INTO trek (name,location,difficulty,duration,availableslots,status,startdate,enddate) VALUES($1,$2,$3,$4,$5,$6,$7,$8)`
+        const values = [name, location, difficulty, duration, availableSlots, status, startDate, endDate]
+        await db.query(q, values)
         return res.status(200).json({ message: "trek create success" })
     } catch (error) {
         console.error(error)
@@ -78,6 +84,11 @@ const updateTrek = async (req, res) => {
 }
 const deleteTrek = async (req, res) => {
     try {
+        const q = "DELETE FROM trek WHERE id = $1"
+        const { tid } = req.params
+        const values = [tid]
+        await db.query(q, values)
+
         return res.status(200).json({ message: "trek delete success" })
     } catch (error) {
         console.error(error)

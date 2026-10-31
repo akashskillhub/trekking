@@ -5,8 +5,13 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import clsx from 'clsx'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
+import { useEffect } from "react"
+import { useState } from "react"
+import { tr } from "zod/v4/locales"
 
 const Trek = () => {
+    const [allTrek, setAllTrek] = useState([])
+    const [removeId, setRemoveId] = useState(null)
     const api = axios.create({ baseURL: `${config.BACKEND_URL}/api/admin`, withCredentials: "includes" })
 
     const schema = z.object({
@@ -27,8 +32,8 @@ const Trek = () => {
         resolver: zodResolver(schema)
     })
 
-    const handleFormSubmit = trekData => {
-        console.log(trekData)
+    const handleFormSubmit = async trekData => {
+        await addTrek(trekData)
         reset()
     }
 
@@ -43,6 +48,7 @@ const Trek = () => {
 
             const { data } = await api.get("/trek")
             console.log(data)
+            setAllTrek(data.result)
         } catch (error) {
             console.log(error)
         }
@@ -52,6 +58,7 @@ const Trek = () => {
         try {
             const { data } = await api.post("/create-trek", trekData)
             toast.success("trek create success")
+            fetchTreks()
         } catch (error) {
             console.log(error)
             toast.error("unable to create trek")
@@ -70,13 +77,17 @@ const Trek = () => {
 
     const removeTrek = async trekData => {
         try {
-            const { data } = await api.delete("/delete-trek/1")
+            const { data } = await api.delete(`/delete-trek/${removeId}`)
             toast.success("trek delete success")
+            fetchTreks()
         } catch (error) {
             console.log(error)
             toast.error("unable to delete trek")
         }
     }
+    useEffect(() => {
+        fetchTreks()
+    }, [])
     return <div className="container">
         <div>
             <div className="text-end mt-3">
@@ -137,10 +148,64 @@ const Trek = () => {
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                <button type="submit" form="trekForm" class="btn btn-primary">Save changes</button>
+                                <button type="submit" form="trekForm" class="btn btn-primary" data-bs-dismiss="modal">Save changes</button>
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <table class="table table-dark table-striped table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">name</th>
+                    <th scope="col">location</th>
+                    <th scope="col">difficulty</th>
+                    <th scope="col">duration</th>
+                    <th scope="col">availableSlots</th>
+                    <th scope="col">status</th>
+                    <th scope="col">startDate</th>
+                    <th scope="col">endDate</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {
+                    allTrek.map(item => <tr>
+                        <td>{item.id}</td>
+                        <td>{item.name}</td>
+                        <td>{item.location}</td>
+                        <td>{item.difficulty}</td>
+                        <td>{item.duration}</td>
+                        <td>{item.availableslots}</td>
+                        <td>{item.status}</td>
+                        <td>{item.startdate}</td>
+                        <td>{item.enddate}</td>
+                        <td>
+                            <button type="button" class="btn btn-warning">Edit</button>
+                            <button onClick={() => setRemoveId(item.id)} data-bs-toggle="modal" data-bs-target="#deleteModal" type="button" class="btn btn-danger">Delete</button>
+                        </td>
+                    </tr>)
+                }
+            </tbody>
+        </table>
+
+
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Delete Trek</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <h6>Are you sure you want to delete this trek?</h6>
+                        <button onClick={removeTrek} type="button" data-bs-dismiss="modal" class="btn btn-outline-danger">Yes</button>
+                        <button type="button" data-bs-dismiss="modal" class="btn btn-success">No</button>
+                    </div>
+
                 </div>
             </div>
         </div>
