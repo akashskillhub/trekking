@@ -7,9 +7,10 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { useEffect } from "react"
 import { useState } from "react"
-import { tr } from "zod/v4/locales"
+import { format } from "date-fns"
 
 const Trek = () => {
+    const [selectedTrek, setSelectedTrek] = useState(null)
     const [allTrek, setAllTrek] = useState([])
     const [removeId, setRemoveId] = useState(null)
     const api = axios.create({ baseURL: `${config.BACKEND_URL}/api/admin`, withCredentials: "includes" })
@@ -33,8 +34,13 @@ const Trek = () => {
     })
 
     const handleFormSubmit = async trekData => {
-        await addTrek(trekData)
-        reset()
+        if (selectedTrek) {
+            await modifyTrek(trekData)
+            reset({})
+        } else {
+            await addTrek(trekData)
+            reset()
+        }
     }
 
     const handleClasses = (key) => clsx({
@@ -67,7 +73,7 @@ const Trek = () => {
 
     const modifyTrek = async trekData => {
         try {
-            const { data } = await api.put("/update-trek/1", trekData)
+            const { data } = await api.put(`/update-trek/${selectedTrek}`, trekData)
             toast.success("trek update success")
         } catch (error) {
             console.log(error)
@@ -91,16 +97,16 @@ const Trek = () => {
     return <div className="container">
         <div>
             <div className="text-end mt-3">
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTreak">
                     Add Trek
                 </button>
 
 
-                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal fade" id="addTreak" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                                <h5 class="modal-title" id="exampleModalLabel">Create New Trek</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
@@ -136,7 +142,7 @@ const Trek = () => {
                                             <div className="invalid-feedback">{errors.status?.message}</div>
                                         </div>
                                         <div className="col-sm-6">
-                                            <input {...register('startDate')} className={handleClasses('startDate')} type="date" placeholder="enter startdate" />
+                                            <input  {...register('startDate')} className={handleClasses('startDate')} type="date" placeholder="enter startdate" />
                                             <div className="invalid-feedback">{errors.startDate?.message}</div>
                                         </div>
                                         <div className="col-sm-6">
@@ -148,7 +154,12 @@ const Trek = () => {
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                <button type="submit" form="trekForm" class="btn btn-primary" data-bs-dismiss="modal">Save changes</button>
+                                {
+                                    selectedTrek
+                                        ? <button type="submit" form="trekForm" class="btn btn-warning" data-bs-dismiss="modal">Update Trek</button>
+                                        : <button type="submit" form="trekForm" class="btn btn-primary" data-bs-dismiss="modal">Create New Trek</button>
+                                }
+
                             </div>
                         </div>
                     </div>
@@ -181,10 +192,18 @@ const Trek = () => {
                         <td>{item.duration}</td>
                         <td>{item.availableslots}</td>
                         <td>{item.status}</td>
-                        <td>{item.startdate}</td>
-                        <td>{item.enddate}</td>
+                        <td>{format(new Date(item.startdate), "dd-MM-yyyy")}</td>
+                        <td>{format(new Date(item.enddate), "dd-MM-yyyy")}</td>
                         <td>
-                            <button type="button" class="btn btn-warning">Edit</button>
+                            <button onClick={() => {
+                                reset({
+                                    ...item,
+                                    availableSlots: item.availableslots,
+                                    startDate: format(new Date(item.startdate), "yyyy-MM-dd"),
+                                    endDate: format(new Date(item.enddate), "yyyy-MM-dd"),
+                                })
+                                setSelectedTrek(item.id)
+                            }} data-bs-toggle="modal" data-bs-target="#addTreak" type="button" class="btn btn-warning">Edit</button>
                             <button onClick={() => setRemoveId(item.id)} data-bs-toggle="modal" data-bs-target="#deleteModal" type="button" class="btn btn-danger">Delete</button>
                         </td>
                     </tr>)

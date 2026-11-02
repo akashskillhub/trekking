@@ -74,6 +74,12 @@ const createTrek = async (req, res) => {
 }
 const updateTrek = async (req, res) => {
     try {
+        const { tid } = req.params
+        const { name, location, difficulty, duration, availableSlots, status, startDate, endDate } = req.body
+        const values = [name, location, difficulty, duration, availableSlots, status, startDate, endDate, tid]
+        const q = `UPDATE trek SET name=$1,location=$2,difficulty=$3,duration=$4,availableslots=$5,status=$6,startdate=$7,enddate=$8 WHERE id = $9;`
+
+        await db.query(q, values)
         return res.status(200).json({ message: "trek update success" })
     } catch (error) {
         console.error(error)
