@@ -1,5 +1,5 @@
 const db = require("../db");
-
+const cloud = require("./../utils/cloud")
 const fetchAllUsers = async (req, res) => {
     try {
         const q = 'SELECT * FROM users;'
@@ -60,9 +60,17 @@ const readTrek = async (req, res) => {
 }
 const createTrek = async (req, res) => {
     try {
-        const { name, location, difficulty, duration, availableSlots, status, startDate, endDate } = req.body
-        const q = `INSERT INTO trek (name,location,difficulty,duration,availableslots,status,startdate,enddate) VALUES($1,$2,$3,$4,$5,$6,$7,$8)`
-        const values = [name, location, difficulty, duration, availableSlots, status, startDate, endDate]
+        console.log(req.file)
+        console.log(req.body)
+        if (!req.file) {
+            return res.status(400).json({ message: "trek image is required" })
+        }
+        const { secure_url } = await cloud.uploader.upload(req.file.path)
+        console.log(secure_url)
+        // cloudinary
+        const { name, location, difficulty, duration, availableSlots, status, startDate, endDate, description } = req.body
+        const q = `INSERT INTO trek (name,location,difficulty,duration,availableslots,status,startdate,enddate,description,hero) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`
+        const values = [name, location, difficulty, duration, availableSlots, status, startDate, endDate, description, secure_url]
         await db.query(q, values)
         return res.status(200).json({ message: "trek create success" })
     } catch (error) {

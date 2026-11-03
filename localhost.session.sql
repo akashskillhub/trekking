@@ -58,6 +58,29 @@ CREATE TABLE trek (
 -- End Date
 SELECT * FROM trek;
 
+
+
 DELETE FROM trek WHERE id = $1
 
 -- INSERT INTO trek (name,location,difficulty,duration,availableslots,status,startdate,enddate) VALUES($1,$2,$3,$4,$5,$6,$7,$8)
+
+UPDATE trek
+SET
+    name = $1,
+    location = $2,
+    difficulty = $3,
+    duration = $4,
+    availableslots = $5,
+    status = $6,
+    startdate = $7,
+    enddate = $8
+WHERE
+    id = $9;
+
+TRUNCATE table trek;
+
+ALTER TABLE trek
+ADD COLUMN description VARCHAR(250) NOT NULL,
+ADD COLUMN publish BOOLEAN DEFAULT True,
+ADD COLUMN hero VARCHAR(250) NOT NULL;
+

@@ -10,6 +10,7 @@ import { useState } from "react"
 import { format } from "date-fns"
 
 const Trek = () => {
+    const [preview, setPreview] = useState(null)
     const [selectedTrek, setSelectedTrek] = useState(null)
     const [allTrek, setAllTrek] = useState([])
     const [removeId, setRemoveId] = useState(null)
@@ -17,6 +18,8 @@ const Trek = () => {
 
     const schema = z.object({
         name: z.string().min(3, 'Minimum 3 characters'),
+        description: z.string().min(3, 'Minimum 3 characters'),
+        hero: z.instanceof(File),
         location: z.string().min(3, 'Minimum 3 characters'),
         difficulty: z.enum(['easy', 'moderate', 'hard'], { error: 'Select difficulty' }),
         duration: z.string().min(1, 'Duration is required'),
@@ -29,16 +32,28 @@ const Trek = () => {
         path: ['endDate'],
     })
 
-    const { handleSubmit, register, reset, formState: { errors, touchedFields } } = useForm({
+    const { handleSubmit, register, reset, setValue, formState: { errors, touchedFields } } = useForm({
         resolver: zodResolver(schema)
     })
 
     const handleFormSubmit = async trekData => {
+        const fd = new FormData()
+        fd.append("name", trekData.name)
+        fd.append("description", trekData.description)
+        fd.append("hero", trekData.hero)
+        fd.append("location", trekData.location)
+        fd.append("difficulty", trekData.difficulty)
+        fd.append("duration", trekData.duration)
+        fd.append("availableSlots", trekData.availableSlots)
+        fd.append("status", trekData.status)
+        fd.append("startDate", trekData.startDate)
+        fd.append("endDate", trekData.endDate)
         if (selectedTrek) {
             await modifyTrek(trekData)
             reset({})
         } else {
-            await addTrek(trekData)
+            // console.log(trekData)
+            await addTrek(fd)
             reset()
         }
     }
@@ -115,6 +130,23 @@ const Trek = () => {
                                         <div className="col-sm-6">
                                             <input {...register('name')} className={handleClasses('name')} type="text" placeholder="enter name" />
                                             <div className="invalid-feedback">{errors.name?.message}</div>
+                                        </div>
+                                        <div className="col-sm-6">
+                                            <input {...register('description')} className={handleClasses('description')} type="text" placeholder="enter description" />
+                                            <div className="invalid-feedback">{errors.description?.message}</div>
+                                        </div>
+                                        <div className="col-sm-6">
+                                            <input onChange={e => {
+                                                // console.log(e.target) // input
+                                                setValue("hero", e.target.files[0])
+                                                setPreview(URL.createObjectURL(e.target.files[0]))
+
+                                            }}
+                                                className={handleClasses('hero')} type="file" placeholder="enter hero" />
+                                            <div className="invalid-feedback">{errors.hero?.message}</div>
+                                            {
+                                                preview && <img src={preview} height={50} alt="" />
+                                            }
                                         </div>
                                         <div className="col-sm-6">
                                             <input {...register('location')} className={handleClasses('location')} type="text" placeholder="enter location" />
